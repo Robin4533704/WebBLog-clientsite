@@ -16,45 +16,47 @@ import Stats from "../components/DhasBord/Stats";
 import MyBlogs from "../components/MyBlogs";
 import Profile from "../pages/Profiles";
 import AllBlogs from "../components/AllBlogs";
-import RivewCard from "../pages/RivewCard";
-import CategoryBlogs from "../components/DhasBord/CategoryBlogs";
 import ErrorBoundary from "../pages/ErrorBoundary";
 import UserProfile from "../components/DhasBord/UserProfile";
+import ReviewMarquee from "../components/DhasBord/ReviewMarquee";
+import GoogleProfile from "../pages/googleProfiles";
+import AdminContent from "../components/DhasBord/AdminContents";
+import PrivateRoute from "../hook/PrivetRoute";
+import SubscribersAdmin from "../components/DhasBord/SuscribeAdmin";
 
 const Router = createBrowserRouter([
-  // Public pages with MainLayout
   {
     path: "/",
     element: <MainLayout />,
-    errorElement: <ErrorBoundary />, // ✅ Fallback UI for MainLayout & children
+    errorElement: <ErrorBoundary />,
     children: [
       { path: "/", element: <Home /> },
-      { path: "/blogs", element: <AllBlogs /> },
-      { path: "/blogs/category/:categoryName", element: <CategoryBlogs /> },
       { path: "/login", element: <Login /> },
       { path: "/register", element: <Register /> },
-      { path: "/aboutpage", element: <AboutPage /> },
-      { path: "/contactpage", element: <ContactPage /> },
-      { path: "/reviewcard", element: <RivewCard /> },
-      { path: "/blogs/:id", element: <ViewDetails /> },
-     // Blog detail
+      { path: "/blogs", element: <PrivateRoute><AllBlogs /></PrivateRoute> },
+      { path: "/about", element: <PrivateRoute><AboutPage /></PrivateRoute> },
+      { path: "/contactpage", element: <PrivateRoute><ContactPage /></PrivateRoute> },
+      { path: "/blogs/:id", element: <PrivateRoute><ViewDetails /></PrivateRoute> },
+      { path: "/reviewcard", element: <ReviewMarquee /> },
+      { path: "/googleprofile", element: <GoogleProfile /> },
     ],
   },
-
-  // Dashboard with nested routes
   {
     path: "/dashboard",
-    element: <ErrorBoundary><Dashboard /></ErrorBoundary>, // ✅ ErrorBoundary for Dashboard
+    element: <PrivateRoute><Dashboard /></PrivateRoute>,
+    errorElement: <ErrorBoundary />,
     children: [
-      { index: true, element: <Overview /> }, // default = Overview
+      { index: true, element: <Overview /> },
       { path: "myblogs", element: <MyBlogs /> },
       { path: "addblog", element: <AddBlog /> },
       { path: "editblog/:id", element: <EditBlog /> },
       { path: "manage-blogs", element: <ManageBlogs /> },
       { path: "manage-users", element: <ManageUsers /> },
       { path: "stats", element: <Stats /> },
-      {path: "userprofile", element: <UserProfile/>},
-        {path:"profile", element: <Profile/>}
+      { path: "userprofile", element: <UserProfile /> },
+      { path: "profile", element: <Profile /> },
+      { path: "contents", element: <AdminContent /> },
+      { path: "suscribe", element: <SubscribersAdmin /> },
     ],
   },
 ]);

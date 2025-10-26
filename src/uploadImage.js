@@ -1,6 +1,6 @@
 // src/utils/uploadImage.js
 export const uploadImageToImgbb = async (file) => {
-  const key = import.meta.env.VITE_IMGBB_KEY;
+  const key = import.meta.env.VITE_IMAGE_UPLOAD_KEY;
   if (!key) throw new Error("Imgbb API key missing!");
 
   const formData = new FormData();

@@ -1,0 +1,82 @@
+[
+  {
+    "id": 1,
+    "user": "Robin Hossen",
+    "avatar": "https://randomuser.me/api/portraits/men/32.jpg",
+    "type": "LOGIN",
+    "message": "User logged in successfully",
+    "time": "2025-10-24 09:15 AM"
+  },
+  {
+    "id": 2,
+    "user": "Sara Khan",
+    "avatar": "https://randomuser.me/api/portraits/women/44.jpg",
+    "type": "CREATE",
+    "message": "Created a new blog post: 'React Tips & Tricks'",
+    "time": "2025-10-24 09:45 AM"
+  },
+  {
+    "id": 3,
+    "user": "John Doe",
+    "avatar": "https://randomuser.me/api/portraits/men/15.jpg",
+    "type": "UPDATE",
+    "message": "Updated profile picture",
+    "time": "2025-10-24 10:05 AM"
+  },
+  {
+    "id": 4,
+    "user": "Emily Smith",
+    "avatar": "https://randomuser.me/api/portraits/women/22.jpg",
+    "type": "DELETE",
+    "message": "Deleted old draft blog post",
+    "time": "2025-10-24 10:20 AM"
+  },
+  {
+    "id": 5,
+    "user": "Michael Brown",
+    "avatar": "https://randomuser.me/api/portraits/men/47.jpg",
+    "type": "LOGOUT",
+    "message": "User logged out",
+    "time": "2025-10-24 10:30 AM"
+  },
+  {
+    "id": 6,
+    "user": "Olivia Lee",
+    "avatar": "https://randomuser.me/api/portraits/women/55.jpg",
+    "type": "LOGIN",
+    "message": "User logged in from mobile",
+    "time": "2025-10-24 11:05 AM"
+  },
+  {
+    "id": 7,
+    "user": "David Wilson",
+    "avatar": "https://randomuser.me/api/portraits/men/66.jpg",
+    "type": "CREATE",
+    "message": "Created new category: 'Travel'",
+    "time": "2025-10-24 11:20 AM"
+  },
+  {
+    "id": 8,
+    "user": "Sophia Taylor",
+    "avatar": "https://randomuser.me/api/portraits/women/33.jpg",
+    "type": "UPDATE",
+    "message": "Changed password successfully",
+    "time": "2025-10-24 11:45 AM"
+  },
+  {
+    "id": 9,
+    "user": "James Anderson",
+    "avatar": "https://randomuser.me/api/portraits/men/21.jpg",
+    "type": "CREATE",
+    "message": "Added new blog post: 'JavaScript Tricks'",
+    "time": "2025-10-24 12:00 PM"
+  },
+  {
+    "id": 10,
+    "user": "Isabella Martinez",
+    "avatar": "https://randomuser.me/api/portraits/women/18.jpg",
+    "type": "LOGIN",
+    "message": "User logged in from desktop",
+    "time": "2025-10-24 12:15 PM"
+  }
+]

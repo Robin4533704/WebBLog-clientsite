@@ -1,43 +1,38 @@
-
-import { useEffect, useState } from "react";
-import useAxios from "../../hook/useAxios";
-import { getAuth } from "firebase/auth";
+import { useEffect, useState, useContext } from "react";
+import axios from "axios";
+import { AuthContext } from "../../provider/AuthContext";
 
 const useUserRole = () => {
-  const { sendRequest } = useAxios();
-  const [role, setRole] = useState(null);
+  const { currentUser } = useContext(AuthContext);
+  const [role, setRole] = useState("user");
   const [roleLoading, setRoleLoading] = useState(true);
 
   useEffect(() => {
     const fetchRole = async () => {
+      if (!currentUser?.email) {
+        setRole("user");
+        setRoleLoading(false);
+        return;
+      }
+
       try {
-        const auth = getAuth();
-        let user = auth.currentUser;
+        const token = await currentUser.getIdToken(true); // ✅ always fresh
+        localStorage.setItem("fbToken", token); // optional reuse
 
-        // Wait until Firebase user is ready
-        if (!user) {
-          user = await new Promise((resolve) => {
-            const unsubscribe = auth.onAuthStateChanged((u) => {
-              resolve(u);
-              unsubscribe();
-            });
-          });
-        }
+console.log("🔥 Firebase Token:", token);
 
-        if (!user) throw new Error("User not logged in");
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/users/role`,
+          {
+            params: { email: currentUser.email },
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
-        // Get Firebase token
-        const token = await user.getIdToken();
-
-        // Fetch role from backend
-        const res = await sendRequest(`/users/role?email=${user.email}`, {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        setRole(res?.role || "user");
+        console.log("✅ Role response:", res.data);
+        setRole(res.data?.role || "user");
       } catch (err) {
-        console.error("Failed to fetch role:", err);
+        console.error("❌ Role fetch error:", err.response?.data || err.message);
         setRole("user");
       } finally {
         setRoleLoading(false);
@@ -45,7 +40,7 @@ const useUserRole = () => {
     };
 
     fetchRole();
-  }, []);
+  }, [currentUser?.email]);
 
   return { role, roleLoading };
 };

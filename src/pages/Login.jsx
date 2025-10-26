@@ -2,9 +2,10 @@ import React, { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { motion } from "framer-motion";
 import { AuthContext } from "../provider/AuthContext";
 import Loading from "./Loading";
+import SocialLogin from "./SocialLogin";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -12,10 +13,7 @@ const Login = () => {
 
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-  });
+  const [form, setForm] = useState({ email: "", password: "" });
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -40,8 +38,12 @@ const Login = () => {
     try {
       setLoading(true);
       await signInUser(form.email, form.password);
+
+      // Toast success
       toast.success("Login successful!");
-      navigate("/"); // Redirect after login
+
+      // Navigate after short delay for toast visibility
+      setTimeout(() => navigate("/"), 500);
     } catch (err) {
       console.error(err);
       toast.error(err.message || "Login failed");
@@ -50,17 +52,27 @@ const Login = () => {
     }
   };
 
-  return (
-    <section className="min-h-[70vh] flex items-center justify-center py-12 px-4 bg-gray-50">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
+  return (      
+      <section className="min-h-[80vh] flex items-center justify-center py-12 px-4 bg-gray-50 dark:bg-gray-900">
+      <motion.div
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="max-w-md w-full bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 sm:p-10"
+      >
+     
+        <h2 className="text-3xl font-bold text-amber-400 dark:text-gray-100 mb-8 text-center">
           Sign in to your account
         </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Email */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               Email address
             </label>
             <input
@@ -69,14 +81,19 @@ const Login = () => {
               onChange={handleChange}
               type="email"
               placeholder="you@example.com"
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-amber-400"
+              className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 dark:bg-gray-700 dark:text-gray-100"
               required
             />
-          </div>
+          </motion.div>
 
           {/* Password */}
-          <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          <motion.div
+            className="relative"
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               Password
             </label>
             <input
@@ -85,51 +102,69 @@ const Login = () => {
               onChange={handleChange}
               type={showPassword ? "text" : "password"}
               placeholder="At least 6 characters"
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-amber-400 pr-10"
+              className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 pr-10 dark:bg-gray-700 dark:text-gray-100"
               required
             />
-            <div
-              className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
+            <motion.div
+              className="absolute pt-5 inset-y-0 right-3 flex items-center cursor-pointer"
               onClick={() => setShowPassword(!showPassword)}
+              whileHover={{ scale: 1.2 }}
+              whileTap={{ scale: 0.9 }}
             >
               {showPassword ? (
-                <EyeSlashIcon className="h-5 w-5 text-gray-500" />
+                <EyeSlashIcon className="h-5 w-5 text-gray-500 dark:text-gray-300" />
               ) : (
-                <EyeIcon className="h-5 w-5 text-gray-500" />
+                <EyeIcon className="h-5 w-5 text-gray-500 dark:text-gray-300" />
               )}
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
           {/* Submit button */}
-          <button
+          <motion.button
             type="submit"
             disabled={loading}
-            className="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 rounded-md transition disabled:opacity-60"
+            className="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-3 rounded-lg shadow-lg transition disabled:opacity-60"
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
           >
             {loading ? "Logging in..." : "Sign in"}
-          </button>
+          </motion.button>
 
-          {/* Loading */}
+          {/* Loading overlay */}
           {loading && <Loading message="Logging in..." />}
-
-          {/* Register link */}
-          <p className="text-sm text-center text-gray-600 mt-2">
-            Don't have an account?{" "}
-            <Link to="/register" className="text-amber-500 font-medium">
-              Register
-            </Link>
-          </p>
-
-          {/* Optional Google Sign-in button */}
-          <button
-            type="button"
-            className="w-full mt-4 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded-md transition"
-          >
-            Sign in with Google
-          </button>
         </form>
-      </div>
+
+        {/* Social Login */}
+        <motion.div
+          className="mt-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <SocialLogin />
+        </motion.div>
+
+        {/* Register link */}
+        <motion.p
+          className="text-sm text-center text-gray-600 dark:text-gray-300 mt-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+        >
+          Don't have an account?{" "}
+          <Link
+            to="/register"
+            className="text-amber-500 font-medium hover:underline"
+          >
+            Register
+          </Link>
+        </motion.p>
+      </motion.div>
     </section>
+
   );
 };
 

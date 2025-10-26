@@ -1,7 +1,8 @@
 import React from "react";
+import Loading from "../../pages/Loading";
 
 const BlogsTable = ({ blogs }) => {
-  if (!blogs || blogs.length === 0) return <p>No blogs found</p>;
+  if (!blogs || blogs.length === 0) return <Loading/>;
 
   return (
     <table className="w-full bg-white rounded shadow overflow-hidden">

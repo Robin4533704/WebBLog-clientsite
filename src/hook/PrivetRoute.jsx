@@ -1,25 +1,23 @@
+import React from "react";
+import useAuth from "../hook/useAuth";
 import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "../providers/AuthProvider"; // 🔹 তোমার Firebase Auth context
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
   const location = useLocation();
 
-  // 🕐 Wait for Firebase to check login state
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <span className="loading loading-spinner loading-lg text-blue-600"></span>
+        <div className="w-12 h-12 border-4 border-blue-500 border-dashed rounded-full animate-spin"></div>
       </div>
     );
   }
 
-  // 🚫 If not logged in → redirect to login page
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // ✅ Logged-in user → allow access
   return children;
 };
 

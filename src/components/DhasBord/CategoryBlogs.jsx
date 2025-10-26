@@ -1,122 +1,150 @@
-import React, { useEffect, useState } from "react";
+// CategoryBlogs.jsx
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import useAxios from "../../hook/useAxios";
-import BlogCard from "../DhasBord/Blogcard"; 
-import { useParams } from "react-router-dom";
+import BlogCard from "../DhasBord/Blogcard";
+import useUserAxios from "../../hook/useUserAxios";
+
+const containerVariants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.1 } },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 30 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+};
 
 const CategoryBlogs = () => {
-  const { categoryName } = useParams();
-  const { sendRequest } = useAxios();
-
+  const { axiosIntals } = useUserAxios();
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [search, setSearch] = useState("");
-  const limit = 6;
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [visibleCount, setVisibleCount] = useState(6);
+
+  const fetchBlogs = async () => {
+    setLoading(true);
+    try {
+      const response = await axiosIntals("/blogs");
+      const sortedBlogs = response
+        .slice()
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      setBlogs(sortedBlogs);
+    } catch (err) {
+      console.error("Error fetching blogs:", err);
+      setBlogs([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchCategoryBlogs = async () => {
-      setLoading(true);
-      try {
-        const res = await sendRequest("/blogs", {
-          params: {
-            page,
-            limit,
-            category: categoryName,
-          },
-        });
+    fetchBlogs();
+  }, []);
 
-        if (res.success) {
-          let filteredBlogs = res.blogs;
+  const categories = ["All", ...new Set(blogs.map(blog => {
+    if (Array.isArray(blog.category)) return blog.category[0];
+    return blog.category || "General";
+  }))];
 
-          // ✅ Search filter
-          if (search.trim()) {
-            filteredBlogs = filteredBlogs.filter((b) =>
-              b.title?.toLowerCase().includes(search.toLowerCase())
-            );
-          }
+  const filteredBlogs =
+    selectedCategory === "All"
+      ? blogs
+      : blogs.filter(blog =>
+          Array.isArray(blog.category)
+            ? blog.category.includes(selectedCategory)
+            : blog.category === selectedCategory
+        );
 
-          // ✅ Remove duplicate blogs by _id
-          const uniqueBlogs = Array.from(new Set(filteredBlogs.map(b => b._id)))
-            .map(id => filteredBlogs.find(b => b._id === id));
+  const handleNext = () => {
+    setVisibleCount(prev => prev + 6);
+  };
 
-          setBlogs(uniqueBlogs);
-          setTotalPages(Math.ceil(res.total / limit));
-        }
-      } catch (error) {
-        console.error("Error fetching category blogs:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCategoryBlogs();
-  }, [page, categoryName, search]);
+  // Reset visibleCount when category changes
+  useEffect(() => {
+    setVisibleCount(6);
+  }, [selectedCategory]);
 
   return (
-    <div className="container mx-auto p-6 mt-10">
-      <motion.h1
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="text-3xl font-bold text-center text-amber-600 mb-6"
-      >
-        {categoryName
-          ? `${categoryName.charAt(0).toUpperCase() + categoryName.slice(1)} Blogs`
-          : "Category Blogs"}
-      </motion.h1>
+    <section className="my-10">
+      <h2 className="text-3xl font-bold mb-6">Category Wise Blogs</h2>
 
-      {/* 🔍 Search Box */}
-      <div className="flex flex-col md:flex-row gap-3 mb-6 justify-center">
-        <input
-          type="text"
-          placeholder="Search blogs..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="border rounded-md px-4 py-2 flex-1 max-w-md"
-        />
+      {/* Category Filter */}
+      <div className="flex flex-wrap gap-3 mb-6">
+        {categories.map(cat => (
+          <button
+            key={cat}
+            onClick={() => setSelectedCategory(cat)}
+            className={`px-4 py-2 rounded-full font-semibold transition-all ${
+              selectedCategory === cat
+                ? "bg-amber-500 text-white"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
       </div>
 
-      {/* 📄 Blog Grid */}
-      {loading ? (
-        <p className="text-center text-gray-500">Loading...</p>
-      ) : blogs.length === 0 ? (
-        <p className="text-center text-gray-500">No blogs found in this category.</p>
-      ) : (
-        <motion.div
-          layout
-          className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
-          {blogs.map((blog) => (
-            <BlogCard key={blog._id} blog={blog} />
+      {/* Loading Skeleton */}
+      {loading && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, idx) => (
+            <div
+              key={idx}
+              className="bg-white rounded-2xl shadow-lg border border-gray-200 p-5 animate-pulse h-72"
+            ></div>
           ))}
-        </motion.div>
-      )}
-
-      {/* 🔢 Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-center gap-2 mt-6">
-          <button
-            onClick={() => setPage((p) => Math.max(p - 1, 1))}
-            disabled={page === 1}
-            className="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400 transition disabled:opacity-50"
-          >
-            Prev
-          </button>
-          <span className="px-4 py-2 text-gray-700">
-            Page {page} of {totalPages}
-          </span>
-          <button
-            onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
-            disabled={page === totalPages}
-            className="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400 transition disabled:opacity-50"
-          >
-            Next
-          </button>
         </div>
       )}
-    </div>
+
+      {/* No Blogs */}
+      {!loading && filteredBlogs.length === 0 && (
+        <p className="text-gray-500">No blogs found in this category</p>
+      )}
+
+      {/* Blog Cards */}
+      {!loading && filteredBlogs.length > 0 && (
+        <>
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            variants={containerVariants}
+            initial="hidden"
+            animate="show"
+          >
+            {filteredBlogs.slice(0, visibleCount).map(blog => (
+              <motion.div
+                key={blog._id}
+                variants={cardVariants}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                <BlogCard
+                  blog={{
+                    ...blog,
+                    category: Array.isArray(blog.category)
+                      ? blog.category[0] || "General"
+                      : blog.category || "General",
+                  }}
+                  hideViewDetails={true}
+                />
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* Next Button */}
+          {visibleCount < filteredBlogs.length && (
+            <div className="flex justify-center mt-6">
+              <button
+                onClick={handleNext}
+                className="bg-amber-500 hover:bg-amber-600 text-white font-semibold px-6 py-2 rounded-full transition-all"
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </>
+      )}
+    </section>
   );
 };
 

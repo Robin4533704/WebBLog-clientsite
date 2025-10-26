@@ -1,207 +1,227 @@
 import React, { useState, useContext } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { AuthContext } from "../provider/AuthContext";
-import useAxios from "../hook/useAxios";
-import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import { useForm } from "react-hook-form";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { uploadImageToImgbb } from "../uploadImage"; // যদি local image upload ফাংশন থাকে
+import { motion } from "framer-motion";
+import SocialLogin from "../pages/SocialLogin";
+import UseAuth from "../hook/UseAuth";
+import useAxios from "../hook/useAxios";
+import { AuthContext } from "../provider/AuthContext";
 
 const Register = () => {
-  const navigate = useNavigate();
-  const { createUser, sendVerificationEmail, loading: authLoading } = useContext(AuthContext);
-  const { sendRequest, loading: axiosLoading } = useAxios();
-
+  const { sendRequest } = useAxios();
+  const { register: formRegister, handleSubmit, formState: { errors } } = useForm();
+  const { createUser, updateUserProfiles } = UseAuth();
+  const { setUser } = useContext(AuthContext);
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  const [form, setForm] = useState({
-    displayName: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    photoFile: null, // নতুন ফিল্ড
-    photoURL: "",    // Firebase/MongoDB এ save এর জন্য
-  });
-
-  const [formError, setFormError] = useState("");
+  const [profilePicFile, setProfilePicFile] = useState(null);
   const [uploading, setUploading] = useState(false);
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/";
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setForm({ ...form, photoFile: file });
+  const handleImageChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setProfilePicFile(e.target.files[0]);
+    }
   };
 
-  const validate = () => {
-    const { displayName, email, password, confirmPassword } = form;
-    if (!displayName || !email || !password || !confirmPassword) return "All fields are required";
-    if (!/^\S+@\S+\.\S+$/.test(email)) return "Please enter a valid email";
-    if (password.length < 6) return "Password must be at least 6 characters";
-    if (password !== confirmPassword) return "Passwords do not match";
-    return null;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setFormError("");
-    const vErr = validate();
-    if (vErr) {
-      setFormError(vErr);
-      toast.error(vErr);
+  const onSubmit = async (data) => {
+    if (!profilePicFile) {
+      toast.error("Please upload a profile picture");
       return;
     }
 
     try {
+      // 🖼 Upload image to imgbb
+      const formData = new FormData();
+      formData.append("image", profilePicFile);
+      const imgbbKey = import.meta.env.VITE_IMAGE_UPLOAD_KEY;
+      if (!imgbbKey) return toast.error("Image upload key missing!");
+
       setUploading(true);
-      // যদি user image select করে
-      if (form.photoFile) {
-        const imageUrl = await uploadImageToImgbb(form.photoFile);
-        form.photoURL = imageUrl; // Save Firebase/MongoDB এ path
+      const res = await sendRequest(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, {
+        method: "POST",
+        body: formData,
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      if (!res.success) {
+        toast.error("Image upload failed");
+        return;
       }
 
-      // 1️⃣ Firebase register
-      const userCredential = await createUser(form.email, form.password);
-      await sendVerificationEmail();
+      const uploadedImageUrl = res.data.display_url;
 
-      // 2️⃣ Firebase profile update
-      await userCredential.user.updateProfile({
-        displayName: form.displayName,
-        photoURL: form.photoURL || "",
+      // 🔥 Firebase register
+      let result;
+      try {
+        result = await createUser(data.email, data.password);
+      } catch (firebaseErr) {
+        if (firebaseErr.code === "auth/email-already-in-use") {
+          return toast.error("Email already exists!");
+        }
+        return toast.error(firebaseErr.message);
+      }
+
+      // 🔄 Update Firebase user profile
+      await updateUserProfiles({
+        displayName: data.name,
+        photoURL: uploadedImageUrl,
       });
 
-      // 3️⃣ Token
-      const token = await userCredential.user.getIdToken();
-
-      // 4️⃣ MongoDB register
-      await sendRequest("/users", {
-        method: "POST",
-        body: {
-          uid: userCredential.user.uid,
-          name: form.displayName,
-          email: form.email,
-          photoURL: form.photoURL || "",
-          role: "user",
-        },
-        token,
+      // 👤 Update Navbar user state
+      setUser({
+        uid: result.user.uid,
+        email: result.user.email,
+        displayName: data.name,
+        photoURL: uploadedImageUrl,
       });
 
-      // 5️⃣ Toast + navigate
-      toast.success("✅ Registration successful! Please check your email.");
-      setTimeout(() => navigate("/login"), 1500);
-    } catch (err) {
-      console.error(err);
-      const errorMsg = err.message || "Registration failed. Try again.";
-      setFormError(errorMsg);
-      toast.error(errorMsg);
+      // 🔑 Get Firebase ID Token and save it in localStorage
+      const token = await result.user.getIdToken();
+      localStorage.setItem("fbToken", token);
+      console.log("✅ Firebase Token Saved:", token);
+
+      // 💾 Save user info to MongoDB
+      try {
+        await sendRequest("/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: data.email,
+            name: data.name,
+            photoURL: uploadedImageUrl,
+            role: "user",
+          }),
+        });
+      } catch (mongoErr) {
+        return toast.warn(mongoErr.response?.data?.message || "User already exists!");
+      }
+
+      toast.success("🎉 Registration successful!");
+      navigate(from);
+
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message || "Something went wrong!");
     } finally {
       setUploading(false);
     }
   };
 
-  if (authLoading || axiosLoading) return null;
-
   return (
-    <section className="min-h-[70vh] flex items-center justify-center py-12 px-4 bg-gray-50">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">Create an account</h2>
+    <motion.div
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="max-w-md mx-auto mt-10 p-6 shadow-2xl rounded-xl bg-white"
+    >
+      <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">Create an Account</h1>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Full Name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Full name</label>
-            <input
-              name="displayName"
-              value={form.displayName}
-              onChange={handleChange}
-              type="text"
-              placeholder="Your full name"
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-amber-400"
-              required
-            />
-          </div>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        {/* Name */}
+        <motion.input
+          {...formRegister("name", { required: "Name is required" })}
+          placeholder="Name"
+          className={`input input-bordered w-full ${errors.name ? "border-red-500" : ""}`}
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.1 }}
+        />
+        {errors.name && <p className="text-red-500">{errors.name.message}</p>}
 
-          {/* Email */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email address</label>
-            <input
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-              type="email"
-              placeholder="you@example.com"
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-amber-400"
-              required
-            />
-          </div>
+        {/* Email */}
+        <motion.input
+          {...formRegister("email", { required: "Email is required" })}
+          type="email"
+          placeholder="Email"
+          className={`input input-bordered w-full ${errors.email ? "border-red-500" : ""}`}
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.2 }}
+        />
+        {errors.email && <p className="text-red-500">{errors.email.message}</p>}
 
-          {/* Password */}
-          <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input
-              name="password"
-              value={form.password}
-              onChange={handleChange}
-              type={showPassword ? "text" : "password"}
-              placeholder="At least 6 characters"
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-amber-400 pr-10"
-              required
-            />
-            <div
-              className="absolute pt-6 inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? <EyeSlashIcon className="h-5 w-5 text-gray-500" /> : <EyeIcon className="h-5 w-5 text-gray-500" />}
-            </div>
-          </div>
-
-          {/* Confirm Password */}
-          <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
-            <input
-              name="confirmPassword"
-              value={form.confirmPassword}
-              onChange={handleChange}
-              type={showConfirmPassword ? "text" : "password"}
-              placeholder="Repeat password"
-              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-amber-400 pr-10"
-              required
-            />
-            <div
-              className="absolute pt-6 inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-            >
-              {showConfirmPassword ? <EyeSlashIcon className="h-5 w-5 text-gray-500" /> : <EyeIcon className="h-5 w-5 text-gray-500" />}
-            </div>
-          </div>
-
-          {/* Profile Photo */}
-          <div>
-            <label className="block mb-1 font-medium">Profile Photo</label>
-            <input type="file" accept="image/*" onChange={handleFileChange} className="w-full border rounded px-3 py-2" />
-          </div>
-
-          {formError && <p className="text-sm text-red-500">{formError}</p>}
-
-          <button
-            type="submit"
-            disabled={authLoading || axiosLoading || uploading}
-            className="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 rounded-md transition disabled:opacity-60"
+        {/* Password */}
+        <motion.div
+          className="relative"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <input
+            {...formRegister("password", { required: "Password is required", minLength: 6 })}
+            type={showPassword ? "text" : "password"}
+            placeholder="Password"
+            className={`input input-bordered w-full pr-10 ${errors.password ? "border-red-500" : ""}`}
+          />
+          <motion.button
+            type="button"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600"
+            onClick={() => setShowPassword(!showPassword)}
+            whileHover={{ scale: 1.2 }}
+            whileTap={{ scale: 0.9 }}
           >
-            {uploading ? "Uploading..." : "Register"}
-          </button>
-        </form>
+            {showPassword ? <FaEyeSlash /> : <FaEye />}
+          </motion.button>
+        </motion.div>
+        {errors.password && <p className="text-red-500">{errors.password.message}</p>}
 
-        <p className="text-blue-400 p-2">
-          Already have an account?
-          <Link className="ml-2 text-amber-400 hover:border-b-2" to="/login">Login</Link>
-        </p>
+        {/* Profile Image */}
+        <motion.input
+          type="file"
+          onChange={handleImageChange}
+          accept="image/*"
+          className="input w-full"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.4 }}
+        />
 
-        <ToastContainer position="top-right" autoClose={3000} />
-      </div>
-    </section>
+        {/* Submit */}
+        <motion.button
+          type="submit"
+          disabled={uploading}
+          className="btn w-full bg-amber-500 hover:bg-amber-600 text-white font-bold shadow-lg"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+        >
+          {uploading ? "Uploading..." : "Register"}
+        </motion.button>
+      </form>
+
+      {/* Login link */}
+      <motion.p
+        className="mt-3 text-center text-gray-700"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.6 }}
+      >
+        Already have an account?{" "}
+        <Link to="/login" className="text-blue-500 font-semibold hover:underline">
+          Login
+        </Link>
+      </motion.p>
+
+      {/* Social Login */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.7 }}
+        className="mt-4"
+      >
+        <SocialLogin />
+      </motion.div>
+
+      <ToastContainer position="top-right" autoClose={3000} />
+    </motion.div>
   );
 };
 

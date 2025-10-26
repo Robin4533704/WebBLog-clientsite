@@ -1,118 +1,106 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
-import useAxios from "../hook/useAxios";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import useAxios from "../hook/useAxios"; // তোমার useAxios
 
 const ContactPage = () => {
-  const { sendRequest, loading } = useAxios();
-  const [formData, setFormData] = useState({ name: "", email: "", message: "" });
-  const [feedback, setFeedback] = useState(null);
+  const { sendRequest } = useAxios();
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    message: "",
+  });
+  const [loading, setLoading] = useState(false);
 
-  // ফর্ম ডাটা হ্যান্ডল
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // ফর্ম সাবমিট
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setFeedback(null);
+
+    if (!formData.name || !formData.email || !formData.message) {
+      toast.error("Please fill all fields!");
+      return;
+    }
 
     try {
-      const res = await sendRequest("/contact", "POST", formData);
-      if (res.success) {
-        setFeedback({ type: "success", message: res.message });
-        setFormData({ name: "", email: "", message: "" });
-      }
-    } catch (err) {
-      setFeedback({
-        type: "error",
-        message: err.response?.data?.message || "Something went wrong!",
+      setLoading(true);
+      const res = await sendRequest("/contacts", {
+        method: "POST",
+        body: formData,
       });
+      toast.success(res.message || "Message sent successfully!");
+      setFormData({ name: "", email: "", message: "" }); // clear form
+    } catch (err) {
+      console.error("Failed to send message:", err);
+      toast.error(err.response?.data?.message || "Failed to send message.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-16 text-gray-800">
-      {/* Header */}
+    <div className="min-h-screen bg-gray-50 py-12 px-6 md:px-12 flex justify-center items-start">
+      <ToastContainer position="top-right" autoClose={3000} />
       <motion.div
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="text-center mb-10"
+        transition={{ duration: 0.8 }}
+        className="w-full max-w-lg bg-white shadow-lg rounded-2xl p-8 md:p-12"
       >
-        <h1 className="text-4xl font-bold text-gray-900 mb-3">Contact Us</h1>
-        <p className="text-gray-600">
-          We'd love to hear from you! Fill out the form below and we’ll get back
-          to you soon.
-        </p>
-      </motion.div>
+        <h1 className="text-3xl md:text-4xl font-bold text-center mb-8 text-blue-600">
+          📬 Contact Us
+        </h1>
 
-      {/* Form */}
-      <motion.form
-        onSubmit={handleSubmit}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.7 }}
-        className="bg-white rounded-xl shadow-md p-8 space-y-5"
-      >
-        <div>
-          <label className="block text-gray-700 font-medium mb-2">Name</label>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-            placeholder="Enter your name"
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-amber-400 outline-none"
-          />
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="flex flex-col">
+            <label className="mb-2 font-medium text-gray-700">Name</label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+              placeholder="Your Name"
+            />
+          </div>
 
-        <div>
-          <label className="block text-gray-700 font-medium mb-2">Email</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            placeholder="Enter your email"
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-amber-400 outline-none"
-          />
-        </div>
+          <div className="flex flex-col">
+            <label className="mb-2 font-medium text-gray-700">Email</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+              placeholder="your.email@example.com"
+            />
+          </div>
 
-        <div>
-          <label className="block text-gray-700 font-medium mb-2">Message</label>
-          <textarea
-            name="message"
-            value={formData.message}
-            onChange={handleChange}
-            required
-            placeholder="Write your message..."
-            rows="5"
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-amber-400 outline-none"
-          />
-        </div>
+          <div className="flex flex-col">
+            <label className="mb-2 font-medium text-gray-700">Message</label>
+            <textarea
+              name="message"
+              value={formData.message}
+              onChange={handleChange}
+              className="border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition h-32 resize-none"
+              placeholder="Your message..."
+            />
+          </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-amber-500 text-white py-3 rounded-lg font-semibold hover:bg-amber-600 transition disabled:opacity-60"
-        >
-          {loading ? "Sending..." : "Send Message"}
-        </button>
-
-        {feedback && (
-          <p
-            className={`text-center font-medium mt-3 ${
-              feedback.type === "success" ? "text-green-600" : "text-red-500"
-            }`}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg shadow-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {feedback.message}
-          </p>
-        )}
-      </motion.form>
+            {loading ? "Sending..." : "Send Message"}
+          </motion.button>
+        </form>
+      </motion.div>
     </div>
   );
 };

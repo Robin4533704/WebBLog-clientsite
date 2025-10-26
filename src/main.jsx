@@ -7,14 +7,19 @@ import AuthProvider from "./provider/AuthProvider.jsx";
 import { ThemeProvider } from "./pages/darack/ThemeContext.jsx"; // ✅ Theme Provider
 import { ActivityProvider } from "./hook/ActivityContext.jsx";   // ✅ Activity Provider
 
-createRoot(document.getElementById("root")).render(
-  <StrictMode>
-    <ThemeProvider>
-      <AuthProvider>
-        <ActivityProvider> 
-          <RouterProvider router={Router} />
-        </ActivityProvider>
-      </AuthProvider>
-    </ThemeProvider>
-  </StrictMode>
-);
+// ✅ Safe null check for root element
+const rootElement = document.getElementById("root");
+
+if (rootElement) {
+  createRoot(rootElement).render(
+    <StrictMode>
+      <ThemeProvider>
+        <AuthProvider>
+          <ActivityProvider> 
+            <RouterProvider router={Router} />
+          </ActivityProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </StrictMode>
+  );
+}

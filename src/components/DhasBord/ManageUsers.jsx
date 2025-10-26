@@ -1,4 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
+import { motion } from "framer-motion";
+import { FaUserShield, FaUserAlt, FaTrash } from "react-icons/fa";
 import useAxios from "../../hook/useAxios";
 import Loading from "../../pages/Loading";
 import { AuthContext } from "../../provider/AuthContext";
@@ -27,7 +29,7 @@ const ManageUsers = () => {
   };
 
   useEffect(() => {
-    if (user) fetchUsers(); // fetch only if user logged in
+    if (user) fetchUsers();
   }, [user]);
 
   const toggleRole = async (userId, currentRole) => {
@@ -69,47 +71,74 @@ const ManageUsers = () => {
 
   return (
     <div className="p-4">
-      <h2 className="text-2xl font-bold mb-4">Manage Users</h2>
-      <table className="table-auto w-full border border-gray-300">
-        <thead>
-          <tr className="bg-gray-200 text-center">
-            <th className="border px-4 py-2">Name</th>
-            <th className="border px-4 py-2">Email</th>
-            <th className="border px-4 py-2">Role</th>
-            <th className="border px-4 py-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((u) => (
-            <tr key={u._id} className="text-center">
-              <td className="border px-4 py-2">{u.displayName || u.fullName || "Unknown"}</td>
-              <td className="border px-4 py-2">{u.email}</td>
-              <td className="border px-4 py-2">{u.role}</td>
-              <td className="border px-4 py-2 flex justify-center gap-2">
-                <button
+      <h2 className="text-2xl font-bold mb-6 text-blue-600">Manage Users</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {users.length > 0 ? (
+          users.map((u) => (
+            <motion.div
+              key={u._id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              whileHover={{ scale: 1.03 }}
+              className="bg-white dark:bg-gray-900 p-4 rounded-2xl shadow-lg flex flex-col gap-3 border border-gray-200 dark:border-gray-700"
+            >
+              {/* User Info */}
+              <div className="flex items-center gap-3">
+                <img
+                  src={u.photoURL || "https://i.ibb.co/MBtjqXQ/default-avatar.png"}
+                  alt={u.displayName || u.fullName}
+                  className="w-12 h-12 rounded-full object-cover border-2 border-blue-500"
+                />
+                <div>
+                  <h4 className="font-semibold text-gray-800 dark:text-gray-200">
+                    {u.displayName || u.fullName || "Unknown"}
+                  </h4>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{u.email}</p>
+                  <div className="flex items-center gap-1 mt-1">
+                    {u.role === "admin" ? (
+                      <FaUserShield className="text-yellow-500" />
+                    ) : (
+                      <FaUserAlt className="text-blue-500" />
+                    )}
+                    <span className="text-gray-600 dark:text-gray-400 text-sm">{u.role}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-between gap-2 mt-3">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   disabled={actionLoading}
                   onClick={() => toggleRole(u._id, u.role)}
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded"
+                  className={`flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded ${
+                    u.role === "admin"
+                      ? "bg-blue-500 hover:bg-blue-600 text-white"
+                      : "bg-green-500 hover:bg-green-600 text-white"
+                  } transition`}
                 >
                   {u.role === "admin" ? "Demote" : "Promote"}
-                </button>
-                <button
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   disabled={actionLoading}
                   onClick={() => removeUser(u._id)}
-                  className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded"
+                  className="flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded bg-red-500 hover:bg-red-600 text-white transition"
                 >
-                  Remove
-                </button>
-              </td>
-            </tr>
-          ))}
-          {users.length === 0 && (
-            <tr>
-              <td colSpan={4} className="text-center py-4">No users found</td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+                  <FaTrash /> Remove
+                </motion.button>
+              </div>
+            </motion.div>
+          ))
+        ) : (
+          <p className="col-span-full text-center text-gray-500 dark:text-gray-400">
+            No users found
+          </p>
+        )}
+      </div>
     </div>
   );
 };

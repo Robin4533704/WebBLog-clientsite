@@ -4,8 +4,9 @@ import { AuthContext } from "../provider/AuthContext";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 const useAuth = () => {
-  const authContext = useContext(AuthContext); // যদি AuthContext থাকে
+  const authContext = useContext(AuthContext);
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true); // ✅ add loading
 
   useEffect(() => {
     const auth = getAuth();
@@ -17,16 +18,18 @@ const useAuth = () => {
           uid: firebaseUser.uid,
         });
       } else {
-        setUser(null); // Logged out
+        setUser(null);
       }
+      setLoading(false); // ✅ done loading
     });
 
     return () => unsubscribe();
   }, []);
 
   return {
-    ...authContext, // AuthContext এ থাকা অন্য info
-    user, // এখানে logged-in user info
+    ...authContext,
+    user,
+    loading, // ✅ return loading
   };
 };
 
