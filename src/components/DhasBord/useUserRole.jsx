@@ -3,20 +3,20 @@ import axios from "axios";
 import { AuthContext } from "../../provider/AuthContext";
 
 const useUserRole = () => {
-  const { currentUser } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
   const [role, setRole] = useState("user");
   const [roleLoading, setRoleLoading] = useState(true);
-
+ console.log("admin", user)
   useEffect(() => {
     const fetchRole = async () => {
-      if (!currentUser?.email) {
+      if (!user?.email) {
         setRole("user");
         setRoleLoading(false);
         return;
       }
 
       try {
-        const token = await currentUser.getIdToken(true); // ✅ always fresh
+        const token = await user?.getIdToken(true); // ✅ always fresh
         localStorage.setItem("fbToken", token); // optional reuse
 
 console.log("🔥 Firebase Token:", token);
@@ -24,7 +24,7 @@ console.log("🔥 Firebase Token:", token);
         const res = await axios.get(
           `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/users/role`,
           {
-            params: { email: currentUser.email },
+            params: { email: user.email },
             headers: { Authorization: `Bearer ${token}` },
           }
         );
@@ -40,7 +40,7 @@ console.log("🔥 Firebase Token:", token);
     };
 
     fetchRole();
-  }, [currentUser?.email]);
+  }, [user?.email]);
 
   return { role, roleLoading };
 };

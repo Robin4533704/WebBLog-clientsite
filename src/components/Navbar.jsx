@@ -1,6 +1,6 @@
 import { Link, NavLink } from "react-router-dom";
 import { useState, useEffect, useContext } from "react";
-import { FaBlog, FaBars, FaTimes, FaUserCircle } from "react-icons/fa";
+import { FaBlog, FaBars, FaTimes, FaUserCircle, FaHome, FaFileAlt, FaThLarge, FaEnvelope, FaInfoCircle, FaCog, FaSignOutAlt } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { AuthContext } from "../provider/AuthContext";
 import ThemeToggle from "../pages/darack/ThemsToggle";
@@ -13,11 +13,11 @@ const Navbar = () => {
   const { user: currentUser, logOut } = useContext(AuthContext);
 
   const navItems = [
-    { name: "Home", path: "/" },
-    { name: "Blogs", path: "/blogs" },
-    { name: "Dashboard", path: "/dashboard" },
-    { name: "About", path: "/about" },
-    { name: "Contact", path: "/contactpage" },
+  { name: "Home", path: "/", icon: FaHome },
+    { name: "Blogs", path: "/blogs", icon: FaFileAlt },
+    { name: "Dashboard", path: "/dashboard", icon: FaThLarge },
+    { name: "Contact", path: "/contactpage", icon: FaEnvelope },
+    { name: "About", path: "/about", icon: FaInfoCircle },
   ];
 
   const handleLogout = async () => {

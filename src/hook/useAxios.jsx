@@ -5,7 +5,7 @@ const useAxios = () => {
   const sendRequest = async (url, options = {}) => {
     const {
       method = "GET",
-      body = null,
+     data = null,
       headers: customHeaders = {},
     } = options;
 
@@ -29,7 +29,7 @@ const useAxios = () => {
       const response = await axios({
         url: finalUrl,
         method,
-        data: body,
+        data,
         headers,
       });
 

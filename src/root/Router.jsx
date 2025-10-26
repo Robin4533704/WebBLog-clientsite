@@ -24,6 +24,9 @@ import AdminContent from "../components/DhasBord/AdminContents";
 import PrivateRoute from "../hook/PrivetRoute";
 import SubscribersAdmin from "../components/DhasBord/SuscribeAdmin";
 import Settings from "../pages/Settings";
+import AdminRoute from "../pages/AdminRoute";
+import UserOverview from "../components/DhasBord/UsersOverView";
+import Bookmarks from "../components/bookmarks ";
 
 const Router = createBrowserRouter([
   {
@@ -40,7 +43,8 @@ const Router = createBrowserRouter([
       { path: "/blogs/:id", element: <PrivateRoute><ViewDetails /></PrivateRoute> },
       { path: "/reviewcard", element: <ReviewMarquee /> },
       { path: "/googleprofile", element: <GoogleProfile /> },
-      {path:"/settings", element:<PrivateRoute> <Settings/> </PrivateRoute>}
+      {path:"/settings", element:<PrivateRoute> <Settings/> </PrivateRoute>},
+     
     ],
   },
   {
@@ -48,17 +52,19 @@ const Router = createBrowserRouter([
     element: <PrivateRoute><Dashboard /></PrivateRoute>,
     errorElement: <ErrorBoundary />,
     children: [
-      { index: true, element: <Overview /> },
+      { path: "overview", element: <AdminRoute><Overview /></AdminRoute> },
       { path: "myblogs", element: <MyBlogs /> },
-      { path: "addblog", element: <AddBlog /> },
+      {path: "addblog", element: <AddBlog/>},
+      { path: "useroverview", element: <UserOverview/> },
       { path: "editblog/:id", element: <EditBlog /> },
-      { path: "manage-blogs", element: <ManageBlogs /> },
-      { path: "manage-users", element: <ManageUsers /> },
-      { path: "stats", element: <Stats /> },
-      { path: "userprofile", element: <UserProfile /> },
-      { path: "profile", element: <Profile /> },
-      { path: "contents", element: <AdminContent /> },
-      { path: "suscribe", element: <SubscribersAdmin /> },
+      { path: "manage-blogs", element: <AdminRoute><ManageBlogs /></AdminRoute> },
+      { path: "manage-users", element: <AdminRoute><ManageUsers /></AdminRoute> },
+     
+      { path: "stats", element: <AdminRoute><Stats /></AdminRoute> },
+      { path: "userprofile", element: <AdminRoute><UserProfile /></AdminRoute> },
+      { path: "profile", element: <AdminRoute><Profile /></AdminRoute> },
+      { path: "contents", element: <AdminRoute><AdminContent /></AdminRoute> },
+      { path: "Bookmarks", element: <Bookmarks/> },
     ],
   },
 ]);
