@@ -1,16 +1,25 @@
-import { useContext } from "react";
-import { ThemeContext } from "./ThemeContext";
+// src/components/ThemeToggle.jsx - useTheme diye
+import { motion } from 'framer-motion';
+import { useTheme } from '../../pages/darack/ThemeContext'; // ✅ useTheme import
+import { FaSun, FaMoon } from 'react-icons/fa';
 
 const ThemeToggle = () => {
-  const { theme, toggleTheme } = useContext(ThemeContext);
+  const { theme, toggleTheme, isDark } = useTheme(); // ✅ useTheme use
 
   return (
-    <button
+    <motion.button
+      whileHover={{ scale: 1.1 }}
+      whileTap={{ scale: 0.9 }}
       onClick={toggleTheme}
-      className="px-2 py-2 hover:rounded-full hover:bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 transition-all"
+      className={`p-2 rounded-full transition-all duration-300 ${
+        isDark 
+          ? 'bg-yellow-500 text-white shadow-lg' 
+          : 'bg-gray-200 text-gray-700 shadow-md'
+      }`}
+      title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
     >
-      {theme === "light" ? "🌙 " : "☀️ "}
-    </button>
+      {isDark ? <FaSun size={16} /> : <FaMoon size={16} />}
+    </motion.button>
   );
 };
 

@@ -23,6 +23,7 @@ import GoogleProfile from "../pages/googleProfiles";
 import AdminContent from "../components/DhasBord/AdminContents";
 import PrivateRoute from "../hook/PrivetRoute";
 import SubscribersAdmin from "../components/DhasBord/SuscribeAdmin";
+import Settings from "../pages/Settings";
 
 const Router = createBrowserRouter([
   {
@@ -39,6 +40,7 @@ const Router = createBrowserRouter([
       { path: "/blogs/:id", element: <PrivateRoute><ViewDetails /></PrivateRoute> },
       { path: "/reviewcard", element: <ReviewMarquee /> },
       { path: "/googleprofile", element: <GoogleProfile /> },
+      {path:"/settings", element:<PrivateRoute> <Settings/> </PrivateRoute>}
     ],
   },
   {

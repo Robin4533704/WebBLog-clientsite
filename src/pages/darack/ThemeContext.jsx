@@ -1,28 +1,54 @@
-import { createContext, useState, useEffect } from "react";
+// src/pages/darack/ThemeContext.jsx - CORRECTED VERSION
+import { createContext, useContext, useEffect, useState } from 'react';
 
+// ✅ ThemeContext create korbo ar EXPORT korbo
 export const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState("light");
+  const [theme, setTheme] = useState(() => {
+    const savedTheme = localStorage.getItem('blog-theme');
+    if (savedTheme) return savedTheme;
+    
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark';
+    }
+    return 'light';
+  });
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme) setTheme(savedTheme);
-  }, []);
-
-  useEffect(() => {
-    const html = document.documentElement;
-    if (theme === "dark") html.classList.add("dark");
-    else html.classList.remove("dark");
-    localStorage.setItem("theme", theme);
+    console.log('🔄 Theme changed to:', theme);
+    
+    const root = document.documentElement;
+    root.classList.remove('light', 'dark');
+    root.classList.add(theme);
+    localStorage.setItem('blog-theme', theme);
   }, [theme]);
 
-  const toggleTheme = () =>
-    setTheme(theme === "light" ? "dark" : "light");
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  };
+
+  const value = {
+    theme,
+    toggleTheme,
+    isDark: theme === 'dark'
+  };
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={value}>
       {children}
     </ThemeContext.Provider>
   );
 };
+
+// ✅ useTheme hook export korbo
+export const useTheme = () => {
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error('useTheme must be used within a ThemeProvider');
+  }
+  return context;
+};
+
+// ✅ Default export o korbo
+export default ThemeContext;
