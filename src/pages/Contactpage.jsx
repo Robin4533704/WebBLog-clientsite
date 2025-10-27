@@ -44,7 +44,7 @@ const ContactPage = () => {
 
     try {
       setLoading(true);
-      const res = await sendRequest("/contacts", {
+      const res = await sendRequest("/contactpages", {
         method: "POST",
         body: formData,
       });

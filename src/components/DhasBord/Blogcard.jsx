@@ -170,7 +170,7 @@ const BlogCard = ({ blog, hideViewDetails = false }) => {
           {!hideViewDetails && (
             <Link
               to={`/blogs/${blog._id}`}
-              className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold px-5 py-2 rounded-xl transition-all duration-300 hover:shadow-lg hover:gap-3 group/btn"
+              className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold px-2 lg:px-5 py-2 rounded-xl transition-all duration-300 hover:shadow-lg hover:gap-3 group/btn"
             >
               Read More
               <FaRegClock className="group-hover/btn:translate-x-0.5 transition-transform" />

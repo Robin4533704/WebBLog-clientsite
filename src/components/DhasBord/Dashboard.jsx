@@ -72,6 +72,8 @@ const Dashboard = () => {
     { to: "/dashboard/contents", icon: FaFileAlt, label: "Contents" },
     { to: "/dashboard/subscribe", icon: FaEnvelope, label: "Subscribers" },
     { to: "/dashboard/settings", icon: FaCog, label: "Settings" },
+    { to: "/dashboard/adminsupport", icon: FaCog, label: "Admin Support" },
+   
   ];
 
   const userLinks = [

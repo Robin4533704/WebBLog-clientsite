@@ -1,34 +1,45 @@
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { FaFacebookF, FaInstagram, FaTwitter, FaLinkedinIn, FaEnvelope, FaPhone, FaMapMarkerAlt, FaArrowRight } from "react-icons/fa";
 import { motion } from "framer-motion";
-import { useState } from "react";
-import { toast, ToastContainer } from "react-toastify";
-import useAxios from "../hook/useAxios";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+import {
+  FaFacebook,
+  FaTwitter,
+  FaInstagram,
+  FaLinkedin,
+  FaGithub,
+  FaBlog,
+  FaEnvelope,
+  FaPhone,
+  FaMapMarkerAlt,
+  FaHeadset,
+  FaQuestionCircle,
+  FaShieldAlt,
+  FaRocket
+} from "react-icons/fa";
+import useAxios from "../hook/useAxios"; // Make sure this exists
 
 const Footer = () => {
-  const { sendRequest, loading } = useAxios();
+  const currentYear = new Date().getFullYear();
+  const { sendRequest } = useAxios();
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubscribe = async (e) => {
     e.preventDefault();
     if (!email) return toast.error("Please enter an email address");
-    
-    // Basic email validation
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return toast.error("Please enter a valid email address");
-    }
+    if (!emailRegex.test(email)) return toast.error("Please enter a valid email address");
 
     setIsSubmitting(true);
     try {
-     const res = await sendRequest("/subscribers", {
-  method: "POST",
-  data: { email },  // <-- এখানে
-  headers: { "Content-Type": "application/json" },
-  skipToken: true
-});
+      const res = await sendRequest("/subscribers", {
+        method: "POST",
+        data: { email },
+        headers: { "Content-Type": "application/json" },
+        skipToken: true
+      });
 
       if (res.success) {
         toast.success("🎉 Successfully subscribed to newsletter!");
@@ -44,286 +55,210 @@ const Footer = () => {
     }
   };
 
+  const footerSections = [
+    {
+      title: "Quick Links",
+      links: [
+        { name: "Home", path: "/" },
+        { name: "Blogs", path: "/blogs" },
+        { name: "Dashboard", path: "/dashboard" },
+        { name: "About Us", path: "/about" },
+        { name: "Contact", path: "/contactpage" }
+      ]
+    },
+    {
+      title: "Help Center",
+      links: [
+        { name: "FAQ", path: "/help/faq" },
+        { name: "Support", path: "/help/support" },
+        { name: "Privacy Policy", path: "/privacy" },
+        { name: "Terms of Service", path: "/terms" },
+        { name: "Community Guidelines", path: "#" }
+      ]
+    },
+    {
+      title: "Resources",
+      links: [
+        { name: "Documentation", path: "#" },
+        { name: "Tutorials", path: "/tutorials" },
+        { name: "Blog Guidelines", path: "#" },
+        { name: "API", path: "#" },
+        { name: "Sitemap", path: "#" }
+      ]
+    }
+  ];
+
   const socialLinks = [
-    { icon: FaFacebookF, href: "#", color: "hover:bg-blue-600", label: "Facebook" },
-    { icon: FaInstagram, href: "#", color: "hover:bg-pink-600", label: "Instagram" },
-    { icon: FaTwitter, href: "#", color: "hover:bg-blue-400", label: "Twitter" },
-    { icon: FaLinkedinIn, href: "#", color: "hover:bg-blue-700", label: "LinkedIn" },
+    { icon: FaFacebook, url: "https://facebook.com", color: "hover:text-blue-600" },
+    { icon: FaTwitter, url: "https://twitter.com", color: "hover:text-blue-400" },
+    { icon: FaInstagram, url: "https://instagram.com", color: "hover:text-pink-500" },
+    { icon: FaLinkedin, url: "https://linkedin.com", color: "hover:text-blue-700" },
+    { icon: FaGithub, url: "https://github.com", color: "hover:text-gray-700 dark:hover:text-gray-300" }
   ];
 
-  const quickLinks = [
-    { name: "Home", path: "/" },
-    { name: "Blogs", path: "/blogs" },
-    { name: "Add Blog", path: "/add-blog" },
-    { name: "Dashboard", path: "/dashboard" },
-    { name: "Contact", path: "/contactpage" },
-    { name: "About", path: "/about" },
-  ];
-
-  const supportLinks = [
-    { name: "Help Center", path: "/help" },
-    { name: "Privacy Policy", path: "/privacy" },
-    { name: "Terms & Conditions", path: "/terms" },
-    { name: "FAQs", path: "/faq" },
-    { name: "Community Guidelines", path: "/guidelines" },
-    { name: "Support", path: "/support" },
-  ];
-
-  const contactInfo = [
-    { icon: FaEnvelope, text: "support@bloghub.com", href: "mailto:support@bloghub.com" },
-    { icon: FaPhone, text: "+1 (555) 123-4567", href: "tel:+15551234567" },
-    { icon: FaMapMarkerAlt, text: "123 Blog Street, Digital City", href: "#" },
+  const helpFeatures = [
+    {
+      icon: FaQuestionCircle,
+      title: "FAQ",
+      description: "Find answers to common questions",
+      path: "/help/faq"
+    },
+    {
+      icon: FaHeadset,
+      title: "24/7 Support",
+      description: "Get help anytime, anywhere",
+      path: "/help/support"
+    },
+    {
+      icon: FaShieldAlt,
+      title: "Privacy & Security",
+      description: "Your data is safe with us",
+      path: "/privacy"
+    },
+    {
+      icon: FaRocket,
+      title: "Quick Start",
+      description: "Begin your blogging journey",
+      path: "/tutorials"
+    }
   ];
 
   return (
-    <footer className="bg-gradient-to-b from-gray-900 to-gray-950 text-gray-300 relative overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute inset-0 bg-gradient-to-r from-amber-400/10 to-yellow-500/10"></div>
-      </div>
-
-      <ToastContainer 
-        position="top-right" 
-        autoClose={4000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="dark"
-      />
-
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
-        {/* Main Footer Content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8 lg:gap-12">
-          {/* Brand Section - Full width on mobile, 2 cols on desktop */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.6 }}
-            className="lg:col-span-2"
-          >
-            <Link to="/" className="inline-block mb-4">
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                className="flex items-center gap-3"
-              >
-                <div className="relative">
-                  <div className="w-12 h-12 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl flex items-center justify-center shadow-lg">
-                    <FaEnvelope className="text-white text-xl" />
+    <footer className="bg-gradient-to-br from-gray-900 to-gray-800 text-white pt-16 pb-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Help Features */}
+        <motion.div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          {helpFeatures.map((feature, i) => (
+            <motion.div key={i}
+              whileHover={{ y: -5, scale: 1.02 }}
+              transition={{ type: "spring", stiffness: 300 }}
+              className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 hover:border-amber-400/50 transition-all duration-300 group cursor-pointer"
+            >
+              <Link to={feature.path} className="block">
+                <div className="flex items-center gap-4 mb-3">
+                  <div className="p-3 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                    <feature.icon className="text-xl text-white" />
                   </div>
+                  <h3 className="font-bold text-lg text-white group-hover:text-amber-300 transition-colors duration-300">
+                    {feature.title}
+                  </h3>
                 </div>
-                <span className="text-2xl font-bold bg-gradient-to-r from-white to-amber-300 bg-clip-text text-transparent">
+                <p className="text-gray-300 text-sm leading-relaxed group-hover:text-white transition-colors duration-300">
+                  {feature.description}
+                </p>
+              </Link>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* Brand & Links */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
+          {/* Brand Section */}
+          <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }} className="space-y-6">
+            <Link to="/" className="inline-block">
+              <motion.div whileHover={{ scale: 1.05 }} className="flex items-center gap-3">
+                <motion.div animate={{ rotate: 360 }} transition={{ duration: 8, repeat: Infinity, ease: "linear" }}>
+                  <FaBlog className="text-3xl text-amber-400" />
+                </motion.div>
+                <span className="text-2xl font-bold bg-gradient-to-r from-amber-400 to-yellow-400 bg-clip-text text-transparent">
                   Blog<span className="text-amber-400">Hub</span>
                 </span>
               </motion.div>
             </Link>
-            
-            <p className="text-gray-400 leading-relaxed mb-6 text-sm sm:text-base max-w-md">
-              Join our vibrant community of writers and readers. Discover amazing stories, 
-              share your thoughts, and connect with like-minded individuals from around the world.
+
+            <p className="text-gray-300 leading-relaxed max-w-md">
+              Join thousands of writers and readers on BlogHub - the ultimate platform for sharing ideas, stories, and knowledge.
             </p>
 
-            {/* Contact Info */}
-            <div className="space-y-3 mb-6">
-              {contactInfo.map((item, index) => (
-                <motion.a
-                  key={index}
-                  href={item.href}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  className="flex items-center gap-3 text-gray-400 hover:text-amber-400 transition-colors group text-sm"
-                >
-                  <item.icon className="text-amber-500 group-hover:scale-110 transition-transform flex-shrink-0" />
-                  <span>{item.text}</span>
-                </motion.a>
-              ))}
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 text-gray-300 hover:text-amber-400 transition-colors duration-300">
+                <FaEnvelope className="text-amber-400" /> support@bloghub.com
+              </div>
+              <div className="flex items-center gap-3 text-gray-300 hover:text-amber-400 transition-colors duration-300">
+                <FaPhone className="text-amber-400" /> +1 (555) 123-4567
+              </div>
+              <div className="flex items-center gap-3 text-gray-300 hover:text-amber-400 transition-colors duration-300">
+                <FaMapMarkerAlt className="text-amber-400" /> 123 Blog Street, Digital City
+              </div>
             </div>
 
-            {/* Social Links */}
-            <div className="flex gap-3">
-              {socialLinks.map((social, index) => (
-                <motion.a
-                  key={index}
-                  href={social.href}
-                  aria-label={social.label}
-                  initial={{ opacity: 0, scale: 0 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  whileHover={{ 
-                    scale: 1.2, 
-                    y: -2,
-                    transition: { type: "spring", stiffness: 400, damping: 10 }
-                  }}
-                  whileTap={{ scale: 0.9 }}
-                  className={`p-3 bg-gray-800 rounded-xl ${social.color} hover:shadow-lg transition-all duration-300 group`}
+            <div className="flex items-center gap-4">
+              {socialLinks.map((social, i) => (
+                <motion.a key={i} href={social.url} target="_blank" rel="noopener noreferrer"
+                  whileHover={{ scale: 1.2, y: -2 }} whileTap={{ scale: 0.9 }}
+                  className={`p-3 bg-white/10 rounded-xl backdrop-blur-sm border border-white/20 ${social.color} transition-all duration-300 hover:bg-amber-500 hover:border-amber-400 group`}
                 >
-                  <social.icon className="text-gray-400 group-hover:text-white transition-colors text-sm" />
+                  <social.icon className="text-xl text-white group-hover:text-white" />
                 </motion.a>
               ))}
             </div>
           </motion.div>
 
-          {/* Quick Links */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="lg:col-span-1"
-          >
-            <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
-              <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-              Quick Links
-            </h3>
-            <ul className="space-y-3">
-              {quickLinks.map((link, index) => (
-                <motion.li
-                  key={index}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 + 0.2 }}
-                >
-                  <Link
-                    to={link.path}
-                    className="flex items-center gap-2 text-gray-400 hover:text-amber-400 transition-all duration-300 group text-sm"
-                  >
-                    <FaArrowRight className="text-amber-500 text-xs opacity-0 group-hover:opacity-100 transition-opacity" />
-                    {link.name}
-                  </Link>
-                </motion.li>
-              ))}
-            </ul>
-          </motion.div>
-
-          {/* Support */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="lg:col-span-1"
-          >
-            <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
-              <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-              Support
-            </h3>
-            <ul className="space-y-3">
-              {supportLinks.map((link, index) => (
-                <motion.li
-                  key={index}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 + 0.3 }}
-                >
-                  <Link
-                    to={link.path}
-                    className="flex items-center gap-2 text-gray-400 hover:text-amber-400 transition-all duration-300 group text-sm"
-                  >
-                    <FaArrowRight className="text-amber-500 text-xs opacity-0 group-hover:opacity-100 transition-opacity" />
-                    {link.name}
-                  </Link>
-                </motion.li>
-              ))}
-            </ul>
-          </motion.div>
-
-          {/* Newsletter - Full width on mobile, 2 cols on desktop */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="lg:col-span-2"
-          >
-            <div className="bg-gray-800/50 rounded-2xl p-6 border border-gray-700/50 backdrop-blur-sm">
-              <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-                <FaEnvelope className="text-amber-500" />
-                Stay Updated
-              </h3>
-              <p className="text-gray-400 text-sm mb-6">
-                Subscribe to our newsletter and never miss the latest blogs, updates, and community news.
-              </p>
-
-              <form onSubmit={handleSubscribe} className="space-y-4">
-                <div className="relative">
-                  <input
-                    type="email"
-                    placeholder="Enter your email address"
-                    className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all duration-300 pr-12"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    disabled={isSubmitting}
-                  />
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                    <FaEnvelope className="text-gray-500" />
-                  </div>
-                </div>
-                
-                <motion.button
-                  type="submit"
-                  disabled={isSubmitting || !email}
-                  whileHover={{ scale: isSubmitting || !email ? 1 : 1.02 }}
-                  whileTap={{ scale: isSubmitting || !email ? 1 : 0.98 }}
-                  className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white py-3 px-6 rounded-xl font-semibold hover:from-amber-600 hover:to-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-amber-500/25 flex items-center justify-center gap-2"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      Subscribing...
-                    </>
-                  ) : (
-                    <>
-                      Subscribe Now
-                      <FaArrowRight className="text-sm" />
-                    </>
-                  )}
-                </motion.button>
-              </form>
-
-              <p className="text-xs text-gray-500 mt-4 text-center">
-                No spam ever. Unsubscribe at any time.
-              </p>
-            </div>
+          {/* Footer Links */}
+          <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {footerSections.map((section, i) => (
+              <div key={i} className="space-y-4">
+                <h3 className="font-bold text-lg text-amber-400 mb-4 border-l-4 border-amber-400 pl-3">{section.title}</h3>
+                <ul className="space-y-3">
+                  {section.links.map((link, j) => (
+                    <motion.li key={j} whileHover={{ x: 5 }}>
+                      <Link to={link.path} className="text-gray-300 hover:text-amber-400 transition-all duration-300 flex items-center gap-2 group">
+                        <motion.span className="w-1 h-1 bg-amber-400 rounded-full opacity-0 group-hover:opacity-100" animate={{ scale: [0, 1.2, 1] }} transition={{ duration: 0.3 }} />
+                        {link.name}
+                      </Link>
+                    </motion.li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </motion.div>
         </div>
 
-        {/* Footer Bottom */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="border-t border-gray-800 mt-12 pt-8"
-        >
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="text-gray-500 text-sm text-center md:text-left">
-              © {new Date().getFullYear()} <span className="text-amber-400 font-semibold">BlogHub</span>. 
-              All rights reserved. Crafted with ❤️ for the community.
+        {/* Newsletter */}
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }} className="bg-gradient-to-r from-amber-500/20 to-yellow-500/20 backdrop-blur-lg rounded-2xl p-8 border border-amber-400/30 mb-12">
+          <form onSubmit={handleSubscribe} className="flex flex-col lg:flex-row items-center justify-between gap-6">
+            <div className="flex-1">
+              <h3 className="text-2xl font-bold text-white mb-2">Stay Updated</h3>
+              <p className="text-amber-100">Subscribe to our newsletter for the latest updates, tips, and blog posts.</p>
             </div>
-            
-            <div className="flex gap-6 text-sm">
-              <Link to="/privacy" className="text-gray-500 hover:text-amber-400 transition-colors">
-                Privacy
-              </Link>
-              <Link to="/terms" className="text-gray-500 hover:text-amber-400 transition-colors">
-                Terms
-              </Link>
-              <Link to="/cookies" className="text-gray-500 hover:text-amber-400 transition-colors">
-                Cookies
-              </Link>
+            <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+              <input type="email" placeholder="Enter your email" value={email} onChange={(e) => setEmail(e.target.value)} disabled={isSubmitting} className="px-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-gray-300 focus:outline-none focus:border-amber-400 transition-colors duration-300 flex-1 min-w-64" />
+              <motion.button type="submit" disabled={isSubmitting} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="px-8 py-3 bg-gradient-to-r from-amber-500 to-yellow-500 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-amber-500/25 transition-all duration-300 whitespace-nowrap">
+                {isSubmitting ? "Submitting..." : "Subscribe"}
+              </motion.button>
+            </div>
+          </form>
+        </motion.div>
+
+        {/* Bottom Bar */}
+        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.4 }} className="pt-8 border-t border-gray-700">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-gray-400 text-sm">© {currentYear} BlogHub. All rights reserved. Made with ❤️ for the blogging community.</p>
+            <div className="flex items-center gap-6 text-sm text-gray-400">
+              <Link to="/privacy" className="hover:text-amber-400 transition-colors duration-300">Privacy Policy</Link>
+              <Link to="/terms" className="hover:text-amber-400 transition-colors duration-300">Terms of Service</Link>
+              <Link to="/cookies" className="hover:text-amber-400 transition-colors duration-300">Cookie Policy</Link>
             </div>
           </div>
         </motion.div>
       </div>
+
+      {/* Floating Help Button */}
+      <motion.div initial={{ opacity: 0, scale: 0 }} whileInView={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6, delay: 0.6 }} className="fixed bottom-6 right-6 z-40">
+        <motion.div whileHover={{ scale: 1.1, rotate: 10 }} whileTap={{ scale: 0.9 }} className="relative group">
+          <Link to="/helpcenter" className="flex items-center justify-center w-14 h-14 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-2xl shadow-2xl shadow-amber-500/50 hover:shadow-amber-500/70 transition-all duration-300">
+            <FaHeadset className="text-xl text-white" />
+          </Link>
+          <div className="absolute bottom-full right-0 mb-3 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap shadow-xl border border-gray-700">
+            Need Help?
+            <div className="absolute top-full right-3 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+          </div>
+        </motion.div>
+      </motion.div>
     </footer>
   );
 };

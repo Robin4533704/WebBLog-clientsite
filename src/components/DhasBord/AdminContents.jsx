@@ -24,7 +24,7 @@ const AdminContacts = () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await axiosIntals.get("/contacts");
+        const response = await axiosIntals.get("/contactpages");
         setContacts(response.data);
         setFilteredContacts(response.data);
       } catch (err) {
@@ -59,7 +59,7 @@ const AdminContacts = () => {
 
     try {
       setDeletingId(id);
-      await axiosIntals.delete(`/contacts/${id}`);
+      await axiosIntals.delete(`/contactpages/${id}`);
       setContacts((prev) => prev.filter((c) => c._id !== id));
       // Show success message
       setError(null);
